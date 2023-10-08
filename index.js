@@ -5,9 +5,14 @@ import db from "./config/db.js";
 // Create express instnace
 const app = express();
 
+// Parse application/x-www-form-urlencoded
+app.use(express.urlencoded({extended: true}));
+
+
 // Connect to database
 try {
     await db.authenticate();
+    db.sync();
     console.log('Connection DB has been established successfully.');
   } catch (error) {
     console.error('Unable to connect to the database:', error);
