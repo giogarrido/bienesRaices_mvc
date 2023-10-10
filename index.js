@@ -1,12 +1,21 @@
 import express from "express";
+import csrf from "csurf";
+import cookieParser from "cookie-parser";
 import usuarioRoutes from "./routes/usuarioRoutes.js";
 import db from "./config/db.js";
+
 
 // Create express instnace
 const app = express();
 
 // Parse application/x-www-form-urlencoded
 app.use(express.urlencoded({extended: true}));
+
+//habilitar cookie parser
+app.use(cookieParser());
+
+//habilitar csrf
+app.use(csrf({cookie: true}));
 
 
 // Connect to database
@@ -31,7 +40,7 @@ app.set('views', './views');
 app.use(express.static('public'));
 
 // Define port
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Run server
 app.listen(port, () => console.log(`Server running on port ${port}!`)
