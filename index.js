@@ -2,6 +2,7 @@ import express from "express";
 import csrf from "csurf";
 import cookieParser from "cookie-parser";
 import usuarioRoutes from "./routes/usuarioRoutes.js";
+import propiedadesRoutes from "./routes/propiedadesRoutes.js";
 import db from "./config/db.js";
 
 
@@ -31,6 +32,7 @@ try {
 //Routing
 
 app.use("/auth", usuarioRoutes);
+app.use("/", propiedadesRoutes);
 
 // Set pug as template engine
 app.set('view engine', 'pug');
