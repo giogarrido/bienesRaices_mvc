@@ -53,6 +53,8 @@ const guardar = async (req, res) => {
 
   const { titulo, descripcion, categoria: categoriaId, precio, habitaciones, wc, estacionamiento,calle, lat, lng  } = req.body;
 
+  const { id: usuarioId } = req.usuario;
+
   try {
     const propiedadGuardada = await Propiedad.create({
       titulo,
@@ -65,9 +67,17 @@ const guardar = async (req, res) => {
       lat,
       lng,
       calle,
-      //usuarioId: req.user.id,
+      usuarioId,
+      imagen:''
 
     });
+
+    const { id } = propiedadGuardada;
+
+    res.redirect(`/propiedades/agregar-imagen${id}`);
+
+
+
   } catch (error) {
     console.log(error);
   }
@@ -75,4 +85,10 @@ const guardar = async (req, res) => {
 
 };
 
-export { admin, crear, guardar };
+const agregarImagen = async (req,res) => {
+
+  
+
+}
+
+export { admin, crear, guardar, agregarImagen };
