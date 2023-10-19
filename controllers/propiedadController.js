@@ -1,26 +1,62 @@
-import {unlink} from 'node:fs/promises'
+import { unlink } from "node:fs/promises";
 import { validationResult } from "express-validator";
 import { Categoria, Precio, Propiedad } from "../models/index.js";
 
 const admin = async (req, res) => {
-  const { id } = req.usuario;
+  //LERR QUERYSTRING
 
-  const propiedades = await Propiedad.findAll({
-    where: {
-      usuarioId: id,
-    },
-    include: [
-      { model: Categoria, as: "categoria" },
+  const { pagina: paginaActual } = req.query;
 
-      { model: Precio, as: "precio" },
-    ],
-  });
+  const expresionRegular = /^[1-9]$/;
 
-  res.render("propiedades/admin", {
-    pagina: "Mis Propiedades",
-    propiedades,
-    csrfToken: req.csrfToken(),
-  });
+  if (!expresionRegular.test(paginaActual)) {
+    return res.redirect("/mis-propiedades?pagina=1");
+  }
+
+  try {
+    const { id } = req.usuario;
+
+    //LIMITES Y OFFSETS PARA LA PAGINACIÓN
+
+    const limit = 10;
+    const offset = ((paginaActual * limit) - limit);
+
+
+
+
+    const [propiedades, total] = await Promise.all([
+      Propiedad.findAll({
+        limit,
+        offset,
+        where: {
+          usuarioId: id,
+        },
+        include: [
+          { model: Categoria, as: "categoria" },
+          { model: Precio, as: "precio" },
+        ],
+      }),
+      Propiedad.count({
+        where: {
+          usuarioId: id,
+        },
+      }),
+    ]); 
+
+
+    res.render("propiedades/admin", {
+      pagina: "Mis Propiedades",
+      propiedades,
+      csrfToken: req.csrfToken(),
+      paginas: Math.ceil(total / limit),
+      paginaActual: Number(paginaActual),
+      total,
+      offset,
+      limit,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 //formulario para crear una nueva propiedades
@@ -212,7 +248,6 @@ const guardarCambios = async (req, res) => {
       Precio.findAll(),
     ]);
 
-
     return res.render("propiedades/editar", {
       pagina: "Editar Propiedad",
       csrfToken: req.csrfToken(),
@@ -242,7 +277,6 @@ const guardarCambios = async (req, res) => {
   //REESCRIBIR LOS VALORES DE LA PROPIEDAD Y GUARDARLOS EN LA BASE DE DATOS
 
   try {
-
     const {
       titulo,
       descripcion,
@@ -269,20 +303,15 @@ const guardarCambios = async (req, res) => {
       lng,
     });
 
-
     await propiedad.save();
 
     res.redirect("/mis-propiedades");
-
-    
   } catch (error) {
     console.log(error);
   }
-
 };
 
 const eliminar = async (req, res) => {
-
   const { id } = req.params;
 
   //VALIDAR QUE LA PROPIEDAD EXISTA
@@ -303,22 +332,33 @@ const eliminar = async (req, res) => {
 
   await unlink(`public/uploads/${propiedad.imagen}`);
 
-  
   //ELIMINAR LA PROPIEDAD
 
   await propiedad.destroy();
 
   res.redirect("/mis-propiedades");
-
-  
 };
 
 // MUESTRA UNA PROPIEDAD
 
 const mostrarPropiedad = async (req, res) => {
+  const { id } = req.params;
+
+  //VALIDAR QUE LA PROPIEDAD EXISTA
+  const propiedad = await Propiedad.findByPk(id, {
+    include: [
+      { model: Categoria, as: "categoria" },
+      { model: Precio, as: "precio" },
+    ],
+  });
+
+  if (!propiedad) {
+    return res.redirect("/404");
+  }
 
   res.render("propiedades/mostrar", {
-    pagina: "Mostrar Propiedad",
+    propiedad,
+    pagina: propiedad.titulo,
   });
 };
 
@@ -332,5 +372,4 @@ export {
   eliminar,
   guardarCambios,
   mostrarPropiedad,
-
 };
