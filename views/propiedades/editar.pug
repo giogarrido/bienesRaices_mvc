@@ -7,7 +7,7 @@ block styles
 block contenido
     div.py-10
         h1.text-center.text-4xl.font-extrabold.my-10 Bienes
-            span.font-normal Raices
+            span.font-normal Raíces
         h2.text-center.text-2xl.font-extrabold= pagina
 
         if errores
@@ -17,11 +17,11 @@ block contenido
 
         div(class="bg-white shadow py-8 px-4 rounded mx-auto max-w-4xl my-10 md:px-10")
 
-            form.space-y-8(method="POST" action="/propiedades/crear" novalidate)
+            form.space-y-8(method="POST" novalidate)
                 input(type="hidden" name="_csrf" value=csrfToken)
                 div.space-y-5
                     h3.text-lg.leading-6.font-medium.text-gray-900 Información General
-                    p.text-gray-600 Añade Inofrmación sobre la propiedad en venta
+                    p.text-gray-600 Añade Información sobre la propiedad en venta
                     
                     div
                         label.block.text-sm.uppercase.text-gray-500.mb-3.font-bold(for="titulo") Titulo de Anuncio
@@ -34,18 +34,18 @@ block contenido
                     div(class="md:flex md:gap-4 space-5 md:space-y-0")
 
                         div(class="md:w-1/2") 
-                            label.block.text-sm.uppercase.text-gray-500.mb-3.font-bold(for="categoria") Categoria
+                            label.block.text-sm.uppercase.text-gray-500.mb-3.font-bold(for="categoria") Categoría
                             select#categoria.w-full.px-3.py-2.border.border-gray300.rounder-md.placeholder-gray-400(name="categoria")
                                 option(value="") - Seleccione -
                                 each categoria in categorias
-                                    option(value=categoria.id selected= datos.categoria ? datos.categoria == categoria.id? true : false : null)= categoria.nombre
+                                    option(value=categoria.id selected= datos.categoriaId ? datos.categoriaId == categoria.id? true : false : null)= categoria.nombre
 
                         div(class="md:w-1/2")
                             label.block.text-sm.uppercase.text-gray-500.mb-3.font-bold(for="precio") Precio
                             select#precio.w-full.px-3.py-2.border.border-gray300.rounder-md.placeholder-gray-400(name="precio")
                                 option(value="") - Seleccione -
                                 each precio in precios
-                                    option(value=precio.id selected= datos.precio ? datos.precio == precio.id? true : false : null)= precio.nombre
+                                    option(value=precio.id selected= datos.precioId ? datos.precioId == precio.id? true : false : null)= precio.nombre
                     
                     div(class="md:flex md:gap-4 space-5 md:space-y-0")
 
@@ -86,7 +86,7 @@ block contenido
                         input(type="hidden" name="lat" id="lat" value= datos.lat ? datos.lat : '')
                         input(type="hidden" name="lng" id="lng" value= datos.lng ? datos.lng : '')
 
-                    input(class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-md uppercase cursor-pointer" type="submit" value="Añadir Imagen")
+                    input(class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-md uppercase cursor-pointer" type="submit" value="Guardar Cambios")
 
 block scripts
     script(src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js")
