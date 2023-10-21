@@ -37,7 +37,7 @@ const eliminarDatos = async () => {
     //   Precio.destroy({where:{}, truncate: true }),
     // ]);
 
-    await db.sync({ force: true });
+    await db.sync({ force: true }); // drops all tables then recreates them
 
     console.log("Datos eliminados correctamente");
 
