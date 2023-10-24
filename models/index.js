@@ -1,7 +1,8 @@
-import Propiedad from './propiedad.js';
-import Categoria from './categoria.js';
-import Usuario from './usuario.js';
-import Precio from './precio.js';
+import Propiedad from './Propiedad.js';
+import Categoria from './Categoria.js';
+import Usuario from './Usuario.js';
+import Precio from './Precio.js';
+import Mensaje from './Mensaje.js';
 
 
 //Propiedad tiene un precio
@@ -14,6 +15,10 @@ Propiedad.belongsTo(Categoria , {foreignKey: 'categoriaId'});
 Propiedad.belongsTo(Usuario , {foreignKey: 'usuarioId'});
 
 
+Mensaje.belongsTo(Propiedad , {foreignKey: 'propiedadId'})
+Mensaje.belongsTo(Usuario , {foreignKey: 'usuarioId'})
+
+
 
 
 
@@ -22,7 +27,8 @@ export{
     Propiedad,
     Categoria,
     Usuario,
-    Precio
+    Precio,
+    Mensaje
 }
 
 

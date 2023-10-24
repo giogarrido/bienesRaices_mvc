@@ -9,10 +9,12 @@ import {
   eliminar,
   agregarImagen,
   almacenarImagen,
-  mostrarPropiedad
+  mostrarPropiedad,
+  enviarMensaje
 } from "../controllers/propiedadController.js";
 import protegerRuta from "../middleware/protegerRuta.js";
 import upload from "../middleware/subirImagen.js";
+import identificarUsuario from "../middleware/identificarUsuario.js";
 
 const router = express.Router();
 
@@ -40,16 +42,14 @@ router.post(
   guardar
 );
 
-router.get("/propiedades/agregar-imagen/:id",
-   protegerRuta,
-   agregarImagen
-   );
+router.get("/propiedades/agregar-imagen/:id", protegerRuta, agregarImagen);
 
-router.post("/propiedades/agregar-imagen/:id",
-    protegerRuta,
-    upload.single("imagen"),
-    almacenarImagen
-    );
+router.post(
+  "/propiedades/agregar-imagen/:id",
+  protegerRuta,
+  upload.single("imagen"),
+  almacenarImagen
+);
 
 router.get("/propiedades/editar/:id", protegerRuta, editar);
 
@@ -75,10 +75,18 @@ router.post(
   guardarCambios
 );
 
-router.post("/propiedades/eliminar/:id", protegerRuta, eliminar );
+router.post("/propiedades/eliminar/:id", protegerRuta, eliminar);
 
 //AREA PUBLICA
 
-router.get("/propiedad/:id", mostrarPropiedad);
+router.get("/propiedad/:id", identificarUsuario, mostrarPropiedad);
+
+//Almacenar mensajes
+
+router.post("/propiedad/:id",
+identificarUsuario,
+body('mensaje').isLength({min:10}).withMessage('El mensaje no puede ir vacío o es muy corto'),
+enviarMensaje
+  );
 
 export default router;
