@@ -10,7 +10,8 @@ import {
   agregarImagen,
   almacenarImagen,
   mostrarPropiedad,
-  enviarMensaje
+  enviarMensaje,
+  verMensajes
 } from "../controllers/propiedadController.js";
 import protegerRuta from "../middleware/protegerRuta.js";
 import upload from "../middleware/subirImagen.js";
@@ -88,5 +89,7 @@ identificarUsuario,
 body('mensaje').isLength({min:10}).withMessage('El mensaje no puede ir vacío o es muy corto'),
 enviarMensaje
   );
+
+router.get("/mensajes/:id", protegerRuta, verMensajes);
 
 export default router;

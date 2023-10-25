@@ -1,7 +1,7 @@
 import { unlink } from "node:fs/promises";
 import { validationResult } from "express-validator";
-import { Categoria, Precio, Propiedad } from "../models/index.js";
-import {esVendedor, formatearFecha} from "../helpers/index.js"
+import { Categoria, Mensaje, Precio, Propiedad, Usuario } from "../models/index.js";
+import { esVendedor, formatearFecha } from "../helpers/index.js";
 
 const admin = async (req, res) => {
   //LERR QUERYSTRING
@@ -20,10 +20,7 @@ const admin = async (req, res) => {
     //LIMITES Y OFFSETS PARA LA PAGINACIÓN
 
     const limit = 10;
-    const offset = ((paginaActual * limit) - limit);
-
-
-
+    const offset = paginaActual * limit - limit;
 
     const [propiedades, total] = await Promise.all([
       Propiedad.findAll({
@@ -35,6 +32,7 @@ const admin = async (req, res) => {
         include: [
           { model: Categoria, as: "categoria" },
           { model: Precio, as: "precio" },
+          { model: Mensaje, as: "mensajes"}
         ],
       }),
       Propiedad.count({
@@ -42,8 +40,7 @@ const admin = async (req, res) => {
           usuarioId: id,
         },
       }),
-    ]); 
-
+    ]);
 
     res.render("propiedades/admin", {
       pagina: "Mis Propiedades",
@@ -345,8 +342,6 @@ const eliminar = async (req, res) => {
 const mostrarPropiedad = async (req, res) => {
   const { id } = req.params;
 
-
-
   //VALIDAR QUE LA PROPIEDAD EXISTA
   const propiedad = await Propiedad.findByPk(id, {
     include: [
@@ -369,50 +364,78 @@ const mostrarPropiedad = async (req, res) => {
 };
 
 const enviarMensaje = async (req, res) => {
-  const {id} = req.params
+  const { id } = req.params;
 
   // Comprobar que la propiedad exista
   const propiedad = await Propiedad.findByPk(id, {
-      include : [
-          { model: Precio, as: 'precio' },
-          { model: Categoria, as: 'categoria' },
-      ]
-  })
+    include: [
+      { model: Precio, as: "precio" },
+      { model: Categoria, as: "categoria" },
+    ],
+  });
 
-  if(!propiedad) {
-      return res.redirect('/404')
+  if (!propiedad) {
+    return res.redirect("/404");
   }
 
   // Renderizar los errores
-      // Validación
-  let resultado = validationResult(req)
+  // Validación
+  let resultado = validationResult(req);
 
-  if(!resultado.isEmpty()) {
-
-      return res.render('propiedades/mostrar', {
-          propiedad,
-          pagina: propiedad.titulo,
-          csrfToken: req.csrfToken(),
-          usuario: req.usuario,
-          esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId ),
-          errores: resultado.array()
-      })
+  if (!resultado.isEmpty()) {
+    return res.render("propiedades/mostrar", {
+      propiedad,
+      pagina: propiedad.titulo,
+      csrfToken: req.csrfToken(),
+      usuario: req.usuario,
+      esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId),
+      errores: resultado.array(),
+    });
   }
-  const { mensaje } = req.body
-  const { id: propiedadId } = req.params
-  const { id: usuarioId } = req.usuario
+  const { mensaje } = req.body;
+  const { id: propiedadId } = req.params;
+  const { id: usuarioId } = req.usuario;
 
   // Almacenar el mensaje
   await Mensaje.create({
-      mensaje,
-      propiedadId,
-      usuarioId
-  })
+    mensaje,
+    propiedadId,
+    usuarioId,
+  });
 
+  res.redirect("/");
+};
 
-  res.redirect('/')
+// Leer mensajes recibidos
+const verMensajes = async (req, res) => {
+  const { id } = req.params;
 
-}
+  // Validar que la propiedad exista
+  const propiedad = await Propiedad.findByPk(id, {
+    include: [
+      {
+        model: Mensaje,
+        as: "mensajes",
+        include: [{ model: Usuario.scope("eliminarPassword"), as: "usuario" }],
+      },
+    ],
+  });
+
+  if (!propiedad) {
+    return res.redirect("/mis-propiedades");
+  }
+
+  // Revisar que quien visita la URl, es quien creo la propiedad
+  if (propiedad.usuarioId.toString() !== req.usuario.id.toString()) {
+    return res.redirect("/mis-propiedades");
+  }
+
+  res.render("propiedades/mensajes", {
+    pagina: "Mensajes",
+    mensajes: propiedad.mensajes,
+    formatearFecha,
+  });
+};
 
 export {
   admin,
@@ -424,5 +447,6 @@ export {
   eliminar,
   guardarCambios,
   mostrarPropiedad,
-  enviarMensaje
+  enviarMensaje,
+  verMensajes,
 };
