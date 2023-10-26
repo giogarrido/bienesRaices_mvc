@@ -4,7 +4,7 @@ import { Categoria, Mensaje, Precio, Propiedad, Usuario } from "../models/index.
 import { esVendedor, formatearFecha } from "../helpers/index.js";
 
 const admin = async (req, res) => {
-  //LERR QUERYSTRING
+  //LEER QUERYSTRING
 
   const { pagina: paginaActual } = req.query;
 
@@ -337,6 +337,34 @@ const eliminar = async (req, res) => {
   res.redirect("/mis-propiedades");
 };
 
+// MODIFICA EL ESTADO DE UNA PROPIEDAD
+const cambiarEstado = async (req, res) => {
+
+  const {id} = req.params
+
+  // Validar que la propiedad exista
+  const propiedad = await Propiedad.findByPk(id)
+  if(!propiedad) {
+      return res.redirect('/mis-propiedades')
+  }
+
+  // Revisar que quien visita la URl, es quien creo la propiedad
+  if(propiedad.usuarioId.toString() !== req.usuario.id.toString() ) {
+      return res.redirect('/mis-propiedades')
+  }
+
+  // Actualizar
+  propiedad.publicado = !propiedad.publicado
+
+  await propiedad.save()
+
+  res.json({
+      resultado: true
+  })
+}
+
+
+
 // MUESTRA UNA PROPIEDAD
 
 const mostrarPropiedad = async (req, res) => {
@@ -350,7 +378,7 @@ const mostrarPropiedad = async (req, res) => {
     ],
   });
 
-  if (!propiedad) {
+  if (!propiedad || !propiedad.publicado) {
     return res.redirect("/404");
   }
 
@@ -445,6 +473,7 @@ export {
   almacenarImagen,
   editar,
   eliminar,
+  cambiarEstado,
   guardarCambios,
   mostrarPropiedad,
   enviarMensaje,

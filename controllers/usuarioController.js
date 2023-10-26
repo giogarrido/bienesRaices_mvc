@@ -81,6 +81,13 @@ return res.cookie("_token", token, {
 
 }
 
+const cerrarSesion = (req, res) => {
+
+  res.clearCookie("_token").status(200).redirect("/auth/login");
+  
+
+}
+
 const formularioRegistro = (req, res) => {
   res.render("auth/registro", {
     pagina: "Crear cuenta",
@@ -327,4 +334,5 @@ export {
   comprobarToken,
   nuevoPassword,
   autenticar,
+  cerrarSesion
 };
